@@ -14,13 +14,8 @@ pipeline {
       steps {
         dir("hack") {
           sh("./hack --cells 1")
-        }
-      }
-    }
-    stage("Wait for cluster") {
-      steps {
-        dir("hack") {
           sh("./hack --wait")
+          sh("./hack --label-nodes")
         }
       }
     }
