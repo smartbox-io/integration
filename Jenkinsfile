@@ -13,8 +13,8 @@ pipeline {
     stage("Build cluster") {
       steps {
         dir("hack") {
-          sh("./hack --cells 1")
-          sh("./hack --wait")
+          sh("./hack --debug --cells 1")
+          sh("./hack --debug --wait")
           sh("./hack --label-nodes")
         }
       }
