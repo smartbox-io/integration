@@ -8,6 +8,9 @@ pipeline {
         dir("hack") {
           git url: "https://github.com/smartbox-io/hack.git"
         }
+        dir("cluster") {
+          git url: "https://github.com/smartbox-io/cluster.git"
+        }
       }
     }
     stage("Build cluster") {
@@ -16,6 +19,13 @@ pipeline {
           sh("./hack --cells 1")
           sh("./hack --wait")
           sh("./hack --label-nodes")
+        }
+      }
+    }
+    stage("Deploy") {
+      steps {
+        dir("hack") {
+          sh("find ../cluster/manifests -type f -name '*.yaml' | xargs cat | ./kubectl apply -f -")
         }
       }
     }
