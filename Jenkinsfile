@@ -2,6 +2,12 @@ pipeline {
   agent {
     label "libvirt"
   }
+  parameters {
+    string(name: "HACK_COMMIT", defaultValue: "master", description: "Hack project commit to checkout")
+    string(name: "CLUSTER_COMMIT", defaultValue: "master", description: "Cluster project commit to checkout")
+    string(name: "BRAIN_COMMIT", defaultValue: "master", description: "Brain project commit to checkout")
+    string(name: "CELL_COMMIT", defaultValue: "master", description: "Cell project commit to checkout")
+  }
   stages {
     stage("Clone dependencies") {
       steps {
@@ -10,6 +16,32 @@ pipeline {
         }
         dir("cluster") {
           git url: "https://github.com/smartbox-io/cluster.git"
+        }
+      }
+    }
+    stage("Checkout specific revisions") {
+      parallel {
+        stage("Hack") {
+          when {
+            expression { return params.HACK_COMMIT ==~ /^pull\/\d+/ }
+          }
+          steps {
+            dir("hack") {
+              sh("git fetch origin ${params.HACK_COMMIT}/head:pull-request")
+              sh("git checkout pull-request")
+            }
+          }
+        }
+        stage("Cluster") {
+          when {
+            expression { return params.CLUSTER_COMMIT ==~ /^pull\/\d+/ }
+          }
+          steps {
+            dir("cluster") {
+              sh("git fetch origin ${params.CLUSTER_COMMIT}/head:pull-request")
+              sh("git checkout pull-request")
+            }
+          }
         }
       }
     }
