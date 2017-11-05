@@ -9,7 +9,7 @@ pipeline {
     string(name: "CELL_COMMIT", defaultValue: "master", description: "Cell project commit to checkout")
   }
   stages {
-    stage("Report environment") {
+    stage("Retrieve environment") {
       steps {
         sh("env")
       }
