@@ -25,7 +25,7 @@ pipeline {
     stage("Deploy") {
       steps {
         dir("hack") {
-          sh("find ../cluster/manifests -type f -name '*.yaml' | xargs cat | ./kubectl apply -f -")
+          sh("find ../cluster/manifests -type f -name '*.yaml' -not -name '*-template.yaml' | xargs cat | ./kubectl apply -f -")
         }
       }
     }
