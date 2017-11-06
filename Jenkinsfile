@@ -8,6 +8,7 @@ pipeline {
     string(name: "CLUSTER_BRANCH", defaultValue: "master", description: "Cluster project branch to checkout")
     string(name: "BRAIN_BRANCH", defaultValue: "master", description: "Brain project branch to checkout")
     string(name: "CELL_BRANCH", defaultValue: "master", description: "Cell project branch to checkout")
+    string(name: "CELL_NUMBER", defaultValue: "1", description: "Number of cells to deploy")
   }
   stages {
     stage("Clone dependencies") {
@@ -49,7 +50,7 @@ pipeline {
     stage("Build cluster") {
       steps {
         dir("hack") {
-          sh("./hack --cells 1")
+          sh("./hack --cells ${CELL_NUMBER}")
           sh("./hack --wait")
           sh("./hack --label-nodes")
         }
