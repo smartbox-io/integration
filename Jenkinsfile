@@ -3,17 +3,13 @@ pipeline {
     label "libvirt"
   }
   parameters {
+    string(name: "INTEGRATION_COMMIT", defaultValue: "master", description: "Integration project commit to checkout")
     string(name: "HACK_COMMIT", defaultValue: "master", description: "Hack project commit to checkout")
     string(name: "CLUSTER_COMMIT", defaultValue: "master", description: "Cluster project commit to checkout")
     string(name: "BRAIN_COMMIT", defaultValue: "master", description: "Brain project commit to checkout")
     string(name: "CELL_COMMIT", defaultValue: "master", description: "Cell project commit to checkout")
   }
   stages {
-    stage("Retrieve environment") {
-      steps {
-        sh("env")
-      }
-    }
     stage("Clone dependencies") {
       steps {
         dir("hack") {
