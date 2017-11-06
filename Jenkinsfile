@@ -2,7 +2,7 @@ pipeline {
   agent {
     label "libvirt"
   }
-  triggers { upstream(upstreamProjects: "brain, cell", threshold: hudson.model.Result.SUCCESS) }
+  triggers { upstream(upstreamProjects: "brain/${env.BRANCH_NAME}, cell/${env.BRANCH_NAME}, cluster/${env.BRANCH_NAME}, hack/${env.BRANCH_NAME}", threshold: hudson.model.Result.SUCCESS) }
   parameters {
     string(name: "HACK_COMMIT", defaultValue: "master", description: "Hack project commit to checkout")
     string(name: "CLUSTER_COMMIT", defaultValue: "master", description: "Cluster project commit to checkout")
