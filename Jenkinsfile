@@ -37,7 +37,7 @@ pipeline {
       parallel {
         stage("Hack") {
           when {
-            expression { HACK_BRANCH != "master" }
+            expression { params.HACK_BRANCH != "master" }
           }
           steps {
             dir("hack") {
@@ -48,7 +48,7 @@ pipeline {
         }
         stage("Cluster") {
           when {
-            expression { CLUSTER_BRANCH != "master" }
+            expression { params.CLUSTER_BRANCH != "master" }
           }
           steps {
             dir("cluster") {
