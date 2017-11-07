@@ -3,7 +3,7 @@ pipeline {
     label "libvirt"
   }
   parameters {
-    string(name: "COMMIT_MESSAGE", defaultValue: "", description: "Commit message to extract references from")
+    text(name: "COMMIT_MESSAGE", defaultValue: "", description: "Commit message to extract references from")
     string(name: "INTEGRATION_BRANCH", defaultValue: "master", description: "Integration project branch to checkout")
     string(name: "HACK_BRANCH", defaultValue: "master", description: "Hack project branch to checkout")
     string(name: "CLUSTER_BRANCH", defaultValue: "master", description: "Cluster project branch to checkout")
