@@ -3,6 +3,7 @@ pipeline {
     label "libvirt"
   }
   parameters {
+    string(name: "COMMIT_MESSAGE", defaultValue: "", description: "Commit message to extract references from")
     string(name: "INTEGRATION_BRANCH", defaultValue: "master", description: "Integration project branch to checkout")
     string(name: "HACK_BRANCH", defaultValue: "master", description: "Hack project branch to checkout")
     string(name: "CLUSTER_BRANCH", defaultValue: "master", description: "Cluster project branch to checkout")
@@ -11,8 +12,19 @@ pipeline {
     string(name: "CELL_NUMBER", defaultValue: "1", description: "Number of cells to deploy")
   }
   stages {
+    stage("Environment") {
+      steps {
+        sh("env")
+      }
+    }
     stage("Clone dependencies") {
       steps {
+        dir("brain") {
+          git url: "https://github.com/smartbox-io/brain.git"
+        }
+        dir("cell") {
+          git url: "https://github.com/smartbox-io/cell.git"
+        }
         dir("hack") {
           git url: "https://github.com/smartbox-io/hack.git"
         }
@@ -25,23 +37,23 @@ pipeline {
       parallel {
         stage("Hack") {
           when {
-            expression { return params.HACK_BRANCH ==~ /^pull\/\d+/ }
+            expression { HACK_BRANCH != "master" }
           }
           steps {
             dir("hack") {
-              sh("git fetch origin ${params.HACK_BRANCH}/head:pull-request")
-              sh("git checkout pull-request")
+              sh("git fetch -f origin ${HACK_BRANCH}:${HACK_BRANCH}")
+              sh("git checkout ${HACK_BRANCH}")
             }
           }
         }
         stage("Cluster") {
           when {
-            expression { return params.CLUSTER_BRANCH ==~ /^pull\/\d+/ }
+            expression { CLUSTER_BRANCH != "master" }
           }
           steps {
             dir("cluster") {
-              sh("git fetch origin ${params.CLUSTER_BRANCH}/head:pull-request")
-              sh("git checkout pull-request")
+              sh("git fetch -f origin ${CLUSTER_BRANCH}:${CLUSTER_BRANCH}")
+              sh("git checkout ${CLUSTER_BRANCH}")
             }
           }
         }
