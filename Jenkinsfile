@@ -4,20 +4,46 @@ pipeline {
   }
   parameters {
     text(name: "COMMIT_MESSAGE", defaultValue: "", description: "Commit message to extract references from")
-    string(name: "INTEGRATION_BRANCH", defaultValue: "master", description: "Integration project branch to checkout")
-    string(name: "HACK_BRANCH", defaultValue: "master", description: "Hack project branch to checkout")
-    string(name: "CLUSTER_BRANCH", defaultValue: "master", description: "Cluster project branch to checkout")
     string(name: "BRAIN_COMMIT", defaultValue: "master", description: "Brain project commit to checkout")
     string(name: "CELL_COMMIT", defaultValue: "master", description: "Cell project commit to checkout")
     string(name: "CELL_NUMBER", defaultValue: "1", description: "Number of cells to deploy")
   }
   stages {
-    stage("Environment") {
+    stage("Retrieve build environment") {
       steps {
-        sh("env")
+        script {
+          if (!COMMIT_MESSAGE) {
+            COMMIT_MESSAGE = sh(returnStdout: true, script: "git rev-list --format=%B --max-count=1 ${GIT_COMMIT}").trim()
+          }
+          if (COMMIT_MESSAGE =~ /Requires:.*\/brain\/pull\/\d+/) {
+            BRAIN_PR = (COMMIT_MESSAGE =~ /Requires:.*\/brain\/pull\/(\d+)/)[0][1]
+          } else {
+            BRAIN_PR = null
+          }
+          if (COMMIT_MESSAGE =~ /Requires:.*\/cell\/pull\/\d+/) {
+            CELL_PR = (COMMIT_MESSAGE =~ /Requires:.*\/cell\/pull\/(\d+)/)[0][1]
+          } else {
+            CELL_PR = null
+          }
+          if (COMMIT_MESSAGE =~ /Requires:.*\/hack\/pull\/\d+/) {
+            HACK_PR = (COMMIT_MESSAGE =~ /Requires:.*\/hack\/pull\/(\d+)/)[0][1]
+          } else {
+            HACK_PR = null
+          }
+          if (COMMIT_MESSAGE =~ /Requires:.*\/cluster\/pull\/\d+/) {
+            CLUSTER_PR = (COMMIT_MESSAGE =~ /Requires:.*\/cluster\/pull\/(\d+)/)[0][1]
+          } else {
+            CLUSTER_PR = null
+          }
+          if (COMMIT_MESSAGE =~ /Requires:.*\/integration\/pull\/\d+/) {
+            INTEGRATION_PR = (COMMIT_MESSAGE =~ /Requires:.*\/integration\/pull\/(\d+)/)[0][1]
+          } else {
+            INTEGRATION_PR = null
+          }
+        }
       }
     }
-    stage("Clone dependencies") {
+    stage("Checkout dependencies") {
       steps {
         dir("brain") {
           git url: "https://github.com/smartbox-io/brain.git"
@@ -35,25 +61,43 @@ pipeline {
     }
     stage("Checkout specific revisions") {
       parallel {
-        stage("Hack") {
-          when {
-            expression { params.HACK_BRANCH != "master" }
-          }
+        stage("brain") {
+          when { expression { BRAIN_PR } }
           steps {
-            dir("hack") {
-              sh("git fetch -f origin ${HACK_BRANCH}:${HACK_BRANCH}")
-              sh("git checkout ${HACK_BRANCH}")
+            dir("brain") {
+              sh("git fetch -f origin pull/${BRAIN_PR}/head:pull-request-${BRAIN_PR}")
+              script {
+                BRAIN_COMMIT = sh("git rev-parse pull-request-${BRAIN_PR}")
+              }
             }
           }
         }
-        stage("Cluster") {
-          when {
-            expression { params.CLUSTER_BRANCH != "master" }
+        stage("cell") {
+          when { expression { CELL_PR } }
+          steps {
+            dir("cell") {
+              sh("git fetch -f origin pull/${CELL_PR}/head:pull-request-${CELL_PR}")
+              script {
+                CELL_COMMIT = sh("git rev-parse pull-request-${CELL_PR}")
+              }
+            }
           }
+        }
+        stage("hack") {
+          when { expression { HACK_PR } }
+          steps {
+            dir("hack") {
+              sh("git fetch -f origin pull/${HACK_PR}/head:pull-request")
+              sh("git checkout pull-request")
+            }
+          }
+        }
+        stage("cluster") {
+          when { expression { CLUSTER_PR } }
           steps {
             dir("cluster") {
-              sh("git fetch -f origin ${CLUSTER_BRANCH}:${CLUSTER_BRANCH}")
-              sh("git checkout ${CLUSTER_BRANCH}")
+              sh("git fetch -f origin pull/${CLUSTER_PR}/head:pull-request")
+              sh("git checkout pull-request")
             }
           }
         }
