@@ -6,8 +6,8 @@ pipeline {
     string(name: "INTEGRATION_BRANCH", defaultValue: "master", description: "Integration project branch to checkout")
     string(name: "HACK_BRANCH", defaultValue: "master", description: "Hack project branch to checkout")
     string(name: "CLUSTER_BRANCH", defaultValue: "master", description: "Cluster project branch to checkout")
-    string(name: "BRAIN_BRANCH", defaultValue: "master", description: "Brain project branch to checkout")
-    string(name: "CELL_BRANCH", defaultValue: "master", description: "Cell project branch to checkout")
+    string(name: "BRAIN_COMMIT", defaultValue: "master", description: "Brain project commit to checkout")
+    string(name: "CELL_COMMIT", defaultValue: "master", description: "Cell project commit to checkout")
     string(name: "CELL_NUMBER", defaultValue: "1", description: "Number of cells to deploy")
   }
   stages {
