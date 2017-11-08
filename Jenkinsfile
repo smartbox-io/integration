@@ -153,7 +153,6 @@ pipeline {
             if (CELL_COMMIT) {
               sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/cell#image: registry.smartbox.io/smartbox/cell:${CELL_COMMIT}#'")
             }
-            sh("git diff")
           }
         }
       }
