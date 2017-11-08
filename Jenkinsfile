@@ -77,8 +77,7 @@ pipeline {
         }
       }
     }
-    stage("Retrieve revisions") {
-      when { expression { BRAIN_PR || CELL_PR } }
+    stage("Checkout specific revisions") {
       parallel {
         stage("brain") {
           when { expression { BRAIN_PR } }
@@ -102,19 +101,6 @@ pipeline {
             }
           }
         }
-      }
-    }
-    stage("Checkout specific revisions") {
-      parallel {
-        stage("integration") {
-          when { expression { INTEGRATION_PR } }
-          steps {
-            script {
-              sh("git fetch -f origin pull/${INTEGRATION_PR}/head:pull-request")
-              sh("git checkout pull-request")
-            }
-          }
-        }
         stage("hack") {
           when { expression { HACK_PR || HACK_COMMIT } }
           steps {
@@ -127,6 +113,15 @@ pipeline {
                   sh("git checkout -fb integration ${HACK_COMMIT}")
                 }
               }
+            }
+          }
+        }
+        stage("integration") {
+          when { expression { INTEGRATION_PR } }
+          steps {
+            script {
+              sh("git fetch -f origin pull/${INTEGRATION_PR}/head:pull-request")
+              sh("git checkout pull-request")
             }
           }
         }
