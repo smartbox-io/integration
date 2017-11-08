@@ -4,10 +4,10 @@ pipeline {
   }
   parameters {
     text(name: "COMMIT_MESSAGE", defaultValue: "", description: "Commit message to extract references from")
-    string(name: "HACK_COMMIT", defaultValue: "master", description: "Hack project commit to checkout")
-    string(name: "CLUSTER_COMMIT", defaultValue: "master", description: "Cluster project commit to checkout")
-    string(name: "BRAIN_COMMIT", defaultValue: "master", description: "Brain project commit to checkout")
-    string(name: "CELL_COMMIT", defaultValue: "master", description: "Cell project commit to checkout")
+    string(name: "HACK_COMMIT", defaultValue: "", description: "Hack project commit to checkout")
+    string(name: "CLUSTER_COMMIT", defaultValue: "", description: "Cluster project commit to checkout")
+    string(name: "BRAIN_COMMIT", defaultValue: "", description: "Brain project commit to checkout")
+    string(name: "CELL_COMMIT", defaultValue: "", description: "Cell project commit to checkout")
     string(name: "CELL_NUMBER", defaultValue: "1", description: "Number of cells to deploy")
   }
   stages {
