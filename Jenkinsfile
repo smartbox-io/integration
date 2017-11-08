@@ -62,18 +62,26 @@ pipeline {
       }
     }
     stage("Checkout dependencies") {
-      steps {
-        dir("brain") {
-          git url: "https://github.com/smartbox-io/brain.git"
+     parallel {
+        stage("brain") {
+          dir("brain") {
+            git url: "https://github.com/smartbox-io/brain.git"
+          }
         }
-        dir("cell") {
-          git url: "https://github.com/smartbox-io/cell.git"
+        stage("cell") {
+          dir("cell") {
+            git url: "https://github.com/smartbox-io/cell.git"
+          }
         }
-        dir("hack") {
-          git url: "https://github.com/smartbox-io/hack.git"
+        stage("hack") {
+          dir("hack") {
+            git url: "https://github.com/smartbox-io/hack.git"
+          }
         }
-        dir("cluster") {
-          git url: "https://github.com/smartbox-io/cluster.git"
+        stage("cluster") {
+          dir("cluster") {
+            git url: "https://github.com/smartbox-io/cluster.git"
+          }
         }
       }
     }
