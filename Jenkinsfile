@@ -64,23 +64,31 @@ pipeline {
     stage("Checkout dependencies") {
      parallel {
         stage("brain") {
-          dir("brain") {
-            git url: "https://github.com/smartbox-io/brain.git"
+          steps {
+            dir("brain") {
+              git url: "https://github.com/smartbox-io/brain.git"
+            }
           }
         }
         stage("cell") {
-          dir("cell") {
-            git url: "https://github.com/smartbox-io/cell.git"
+          steps {
+            dir("cell") {
+              git url: "https://github.com/smartbox-io/cell.git"
+            }
           }
         }
         stage("hack") {
-          dir("hack") {
-            git url: "https://github.com/smartbox-io/hack.git"
+          steps {
+            dir("hack") {
+              git url: "https://github.com/smartbox-io/hack.git"
+            }
           }
         }
         stage("cluster") {
-          dir("cluster") {
-            git url: "https://github.com/smartbox-io/cluster.git"
+          steps {
+            dir("cluster") {
+              git url: "https://github.com/smartbox-io/cluster.git"
+            }
           }
         }
       }
