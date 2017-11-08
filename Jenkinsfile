@@ -4,6 +4,8 @@ pipeline {
   }
   parameters {
     text(name: "COMMIT_MESSAGE", defaultValue: "", description: "Commit message to extract references from")
+    string(name: "HACK_COMMIT", defaultValue: "master", description: "Hack project commit to checkout")
+    string(name: "CLUSTER_COMMIT", defaultValue: "master", description: "Cluster project commit to checkout")
     string(name: "BRAIN_COMMIT", defaultValue: "master", description: "Brain project commit to checkout")
     string(name: "CELL_COMMIT", defaultValue: "master", description: "Cell project commit to checkout")
     string(name: "CELL_NUMBER", defaultValue: "1", description: "Number of cells to deploy")
@@ -16,21 +18,37 @@ pipeline {
             COMMIT_MESSAGE = sh(returnStdout: true, script: "git rev-list --format=%B --max-count=1 ${GIT_COMMIT}").trim()
           }
           if (COMMIT_MESSAGE =~ /Requires:.*\/brain\/pull\/\d+/) {
+            if (BRAIN_COMMIT) {
+              echo "[FAILURE] Sorry, you cannot Require a brain PR when forcing a specific commit"
+              sh("exit 1")
+            }
             BRAIN_PR = (COMMIT_MESSAGE =~ /Requires:.*\/brain\/pull\/(\d+)/)[0][1]
           } else {
             BRAIN_PR = null
           }
           if (COMMIT_MESSAGE =~ /Requires:.*\/cell\/pull\/\d+/) {
+            if (CELL_COMMIT) {
+              echo "[FAILURE] Sorry, you cannot Require a cell PR when forcing a specific commit"
+              sh("exit 1")
+            }
             CELL_PR = (COMMIT_MESSAGE =~ /Requires:.*\/cell\/pull\/(\d+)/)[0][1]
           } else {
             CELL_PR = null
           }
           if (COMMIT_MESSAGE =~ /Requires:.*\/hack\/pull\/\d+/) {
+            if (HACK_COMMIT) {
+              echo "[FAILURE] Sorry, you cannot Require a hack PR when forcing a specific commit"
+              sh("exit 1")
+            }
             HACK_PR = (COMMIT_MESSAGE =~ /Requires:.*\/hack\/pull\/(\d+)/)[0][1]
           } else {
             HACK_PR = null
           }
           if (COMMIT_MESSAGE =~ /Requires:.*\/cluster\/pull\/\d+/) {
+            if (CLUSTER_COMMIT) {
+              echo "[FAILURE] Sorry, you cannot Require a cluster PR when forcing a specific commit"
+              sh("exit 1")
+            }
             CLUSTER_PR = (COMMIT_MESSAGE =~ /Requires:.*\/cluster\/pull\/(\d+)/)[0][1]
           } else {
             CLUSTER_PR = null
@@ -61,6 +79,15 @@ pipeline {
     }
     stage("Checkout specific revisions") {
       parallel {
+        stage("integration") {
+          when { expression { INTEGRATION_PR } }
+          steps {
+            script {
+              sh("git fetch -f origin pull/${INTEGRATION_PR}/head:pull-request")
+              sh("git checkout pull-request")
+            }
+          }
+        }
         stage("brain") {
           when { expression { BRAIN_PR } }
           steps {
