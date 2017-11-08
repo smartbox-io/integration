@@ -113,12 +113,14 @@ pipeline {
         stage("hack") {
           when { expression { HACK_PR || HACK_COMMIT } }
           steps {
-            dir("hack") {
-              if (HACK_PR) {
-                sh("git fetch -f origin pull/${HACK_PR}/head:pull-request")
-                sh("git checkout pull-request")
-              } else if (HACK_COMMIT) {
-                sh("git checkout ${HACK_COMMIT}")
+            script {
+              dir("hack") {
+                if (HACK_PR) {
+                  sh("git fetch -f origin pull/${HACK_PR}/head:pull-request")
+                  sh("git checkout pull-request")
+                } else if (HACK_COMMIT) {
+                  sh("git checkout ${HACK_COMMIT}")
+                }
               }
             }
           }
@@ -126,12 +128,14 @@ pipeline {
         stage("cluster") {
           when { expression { CLUSTER_PR || CLUSTER_COMMIT } }
           steps {
-            dir("cluster") {
-              if (CLUSTER_PR) {
-                sh("git fetch -f origin pull/${CLUSTER_PR}/head:pull-request")
-                sh("git checkout pull-request")
-              } else if (CLUSTER_COMMIT) {
-                sh("git checkout ${CLUSTER_COMMIT}")
+            script {
+              dir("cluster") {
+                if (CLUSTER_PR) {
+                  sh("git fetch -f origin pull/${CLUSTER_PR}/head:pull-request")
+                  sh("git checkout pull-request")
+                } else if (CLUSTER_COMMIT) {
+                  sh("git checkout ${CLUSTER_COMMIT}")
+                }
               }
             }
           }
