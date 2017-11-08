@@ -88,28 +88,6 @@ pipeline {
             }
           }
         }
-        stage("brain") {
-          when { expression { BRAIN_PR } }
-          steps {
-            dir("brain") {
-              sh("git fetch -f origin pull/${BRAIN_PR}/head:pull-request-${BRAIN_PR}")
-              script {
-                BRAIN_COMMIT = sh("git rev-parse pull-request-${BRAIN_PR}")
-              }
-            }
-          }
-        }
-        stage("cell") {
-          when { expression { CELL_PR } }
-          steps {
-            dir("cell") {
-              sh("git fetch -f origin pull/${CELL_PR}/head:pull-request-${CELL_PR}")
-              script {
-                CELL_COMMIT = sh("git rev-parse pull-request-${CELL_PR}")
-              }
-            }
-          }
-        }
         stage("hack") {
           when { expression { HACK_PR || HACK_COMMIT } }
           steps {
@@ -136,6 +114,33 @@ pipeline {
                 } else if (CLUSTER_COMMIT) {
                   sh("git checkout -fb integration ${CLUSTER_COMMIT}")
                 }
+              }
+            }
+          }
+        }
+      }
+    }
+    stage("Retrieve revisions") {
+      when { expression { BRAIN_PR || CELL_PR } }
+      parallel {
+        stage("brain") {
+          when { expression { BRAIN_PR } }
+          steps {
+            dir("brain") {
+              sh("git fetch -f origin pull/${BRAIN_PR}/head:pull-request-${BRAIN_PR}")
+              script {
+                BRAIN_COMMIT = sh("git rev-parse pull-request-${BRAIN_PR}")
+              }
+            }
+          }
+        }
+        stage("cell") {
+          when { expression { CELL_PR } }
+          steps {
+            dir("cell") {
+              sh("git fetch -f origin pull/${CELL_PR}/head:pull-request-${CELL_PR}")
+              script {
+                CELL_COMMIT = sh("git rev-parse pull-request-${CELL_PR}")
               }
             }
           }
