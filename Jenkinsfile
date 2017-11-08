@@ -119,7 +119,7 @@ pipeline {
                   sh("git fetch -f origin pull/${HACK_PR}/head:pull-request")
                   sh("git checkout pull-request")
                 } else if (HACK_COMMIT) {
-                  sh("git checkout ${HACK_COMMIT}")
+                  sh("git checkout -b ${HACK_COMMIT} ${HACK_COMMIT}")
                 }
               }
             }
@@ -134,7 +134,7 @@ pipeline {
                   sh("git fetch -f origin pull/${CLUSTER_PR}/head:pull-request")
                   sh("git checkout pull-request")
                 } else if (CLUSTER_COMMIT) {
-                  sh("git checkout ${CLUSTER_COMMIT}")
+                  sh("git checkout -b ${CLUSTER_COMMIT} ${CLUSTER_COMMIT}")
                 }
               }
             }
