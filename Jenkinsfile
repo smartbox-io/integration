@@ -158,6 +158,15 @@ pipeline {
         }
       }
     }
+    stage("Build cluster") {
+      steps {
+        dir("hack") {
+          sh("./hack --cells ${CELL_NUMBER}")
+          sh("./hack --wait")
+          sh("./hack --label-nodes")
+        }
+      }
+    }
     stage("Patch cluster manifests") {
       when { expression { BRAIN_COMMIT || CELL_COMMIT } }
       steps {
@@ -170,15 +179,6 @@ pipeline {
               sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/cell#image: registry.smartbox.io/smartbox/cell:${CELL_COMMIT}#'")
             }
           }
-        }
-      }
-    }
-    stage("Build cluster") {
-      steps {
-        dir("hack") {
-          sh("./hack --cells ${CELL_NUMBER}")
-          sh("./hack --wait")
-          sh("./hack --label-nodes")
         }
       }
     }
