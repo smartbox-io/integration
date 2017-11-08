@@ -143,13 +143,16 @@ pipeline {
       }
     }
     stage("Patch cluster manifests") {
+      when { expression { BRAIN_COMMIT || CELL_COMMIT } }
       steps {
-        dir("cluster") {
-          if (BRAIN_COMMIT) {
-            sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/brain#image: registry.smartbox.io/smartbox/brain:${BRAIN_COMMIT}#'")
-          }
-          if (CELL_COMMIT) {
-            sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/cell#image: registry.smartbox.io/smartbox/cell:${CELL_COMMIT}#'")
+        script {
+          dir("cluster") {
+            if (BRAIN_COMMIT) {
+              sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/brain#image: registry.smartbox.io/smartbox/brain:${BRAIN_COMMIT}#'")
+            }
+            if (CELL_COMMIT) {
+              sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/cell#image: registry.smartbox.io/smartbox/cell:${CELL_COMMIT}#'")
+            }
           }
         }
       }
