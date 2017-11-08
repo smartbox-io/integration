@@ -77,7 +77,7 @@ pipeline {
         }
       }
     }
-    stage("Checkout specific revisions") {
+    stage("Checkout requirements") {
       parallel {
         stage("brain") {
           when { expression { BRAIN_PR } }
