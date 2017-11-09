@@ -171,18 +171,15 @@ pipeline {
       when { expression { BRAIN_COMMIT || CELL_COMMIT } }
       parallel {
         stage("Ensure images exist") {
-          agent { label "docker" }
           steps {
             script {
               if (BRAIN_COMMIT) {
                 BRAIN_IMAGE_EXISTS = sh(returnStdout: true, script: "curl --write-out %{http_code} --silent --output /dev/null -I https://registry.smartbox.io/v2/smartbox/brain/manifests/${BRAIN_COMMIT}").trim() == "200"
                 if (!BRAIN_IMAGE_EXISTS) {
-                  dir("brain") {
-                    docker.build("smartbox/brain:${BRAIN_COMMIT}-production", "-f Dockerfile.production .")
-                    docker.withRegistry("https://registry.smartbox.io/") {
-                      docker.image("smartbox/brain:${BRAIN_COMMIT}-production").push(BRAIN_COMMIT)
-                    }
-                  }
+                  build job: "brain/master", parameters: [
+                    string(name: "BRAIN_COMMIT", value: BRAIN_COMMIT),
+                    booleanParam(name: "SKIP_INTEGRATION", value: true)
+                  ]
                 }
               }
             }
@@ -190,12 +187,10 @@ pipeline {
               if (CELL_COMMIT) {
                 CELL_IMAGE_EXISTS = sh(returnStdout: true, script: "curl --write-out %{http_code} --silent --output /dev/null -I https://registry.smartbox.io/v2/smartbox/cell/manifests/${CELL_COMMIT}").trim() == "200"
                 if (!CELL_IMAGE_EXISTS) {
-                  dir("cell") {
-                    docker.build("smartbox/cell:${CELL_COMMIT}-production", "-f Dockerfile.production .")
-                    docker.withRegistry("https://registry.smartbox.io/") {
-                      docker.image("smartbox/cell:${CELL_COMMIT}-production").push(CELL_COMMIT)
-                    }
-                  }
+                  build job: "cell/master", parameters: [
+                    string(name: "CELL_COMMIT", value: CELL_COMMIT),
+                    booleanParam(name: "SKIP_INTEGRATION", value: true)
+                  ]
                 }
               }
             }
