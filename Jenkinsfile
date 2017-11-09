@@ -175,7 +175,7 @@ pipeline {
           steps {
             script {
               if (BRAIN_COMMIT) {
-                BRAIN_IMAGE_EXISTS = sh("curl --write-out %{http_code} --silent --output /dev/null -I https://registry.smartbox.io/v2/smartbox/brain/manifests/${BRAIN_COMMIT}").trim() == "200"
+                BRAIN_IMAGE_EXISTS = sh(returnStdout: true, script: "curl --write-out %{http_code} --silent --output /dev/null -I https://registry.smartbox.io/v2/smartbox/brain/manifests/${BRAIN_COMMIT}").trim() == "200"
                 if (!BRAIN_IMAGE_EXISTS) {
                   dir("brain") {
                     docker.build("smartbox/brain:${BRAIN_COMMIT}-production", "-f Dockerfile.production .")
@@ -188,7 +188,7 @@ pipeline {
             }
             script {
               if (CELL_COMMIT) {
-                CELL_IMAGE_EXISTS = sh("curl --write-out %{http_code} --silent --output /dev/null -I https://registry.smartbox.io/v2/smartbox/cell/manifests/${CELL_COMMIT}").trim() == "200"
+                CELL_IMAGE_EXISTS = sh(returnStdout: true, script: "curl --write-out %{http_code} --silent --output /dev/null -I https://registry.smartbox.io/v2/smartbox/cell/manifests/${CELL_COMMIT}").trim() == "200"
                 if (!CELL_IMAGE_EXISTS) {
                   dir("cell") {
                     docker.build("smartbox/cell:${CELL_COMMIT}-production", "-f Dockerfile.production .")
