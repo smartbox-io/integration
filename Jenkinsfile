@@ -201,10 +201,10 @@ pipeline {
             script {
               dir("cluster") {
                 if (BRAIN_COMMIT) {
-                  sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/brain#image: registry.smartbox.io/smartbox/brain:${BRAIN_COMMIT}#'")
+                  sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/brain#image: registry.smartbox.io/smartbox/brain:${BRAIN_COMMIT}#g'")
                 }
                 if (CELL_COMMIT) {
-                  sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/cell#image: registry.smartbox.io/smartbox/cell:${CELL_COMMIT}#'")
+                  sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/cell#image: registry.smartbox.io/smartbox/cell:${CELL_COMMIT}#g'")
                 }
               }
             }
@@ -215,7 +215,7 @@ pipeline {
     stage("Deploy") {
       steps {
         dir("hack") {
-          sh("./hack -a")
+          sh("./hack --apply")
         }
       }
     }
