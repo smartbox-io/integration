@@ -167,16 +167,51 @@ pipeline {
         }
       }
     }
-    stage("Patch cluster manifests") {
+    stage("Prepare environment") {
       when { expression { BRAIN_COMMIT || CELL_COMMIT } }
-      steps {
-        script {
-          dir("cluster") {
-            if (BRAIN_COMMIT) {
-              sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/brain#image: registry.smartbox.io/smartbox/brain:${BRAIN_COMMIT}#'")
+      parallel {
+        stage("Ensure images exist") {
+          agent { label "docker" }
+          steps {
+            script {
+              if (BRAIN_COMMIT) {
+                BRAIN_IMAGE_EXISTS = sh("curl --write-out %{http_code} --silent --output /dev/null -I https://registry.smartbox.io/v2/smartbox/brain/manifests/${BRAIN_COMMIT}").trim() == "200"
+                if (!BRAIN_IMAGE_EXISTS) {
+                  dir("brain") {
+                    docker.build("smartbox/brain:${BRAIN_COMMIT}-production", "-f Dockerfile.production .")
+                    docker.withRegistry("https://registry.smartbox.io/") {
+                      docker.image("smartbox/brain:${BRAIN_COMMIT}-production").push(BRAIN_COMMIT)
+                    }
+                  }
+                }
+              }
             }
-            if (CELL_COMMIT) {
-              sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/cell#image: registry.smartbox.io/smartbox/cell:${CELL_COMMIT}#'")
+            script {
+              if (CELL_COMMIT) {
+                CELL_IMAGE_EXISTS = sh("curl --write-out %{http_code} --silent --output /dev/null -I https://registry.smartbox.io/v2/smartbox/cell/manifests/${CELL_COMMIT}").trim() == "200"
+                if (!CELL_IMAGE_EXISTS) {
+                  dir("cell") {
+                    docker.build("smartbox/cell:${CELL_COMMIT}-production", "-f Dockerfile.production .")
+                    docker.withRegistry("https://registry.smartbox.io/") {
+                      docker.image("smartbox/cell:${CELL_COMMIT}-production").push(CELL_COMMIT)
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        stage("Patch cluster manifests") {
+          steps {
+            script {
+              dir("cluster") {
+                if (BRAIN_COMMIT) {
+                  sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/brain#image: registry.smartbox.io/smartbox/brain:${BRAIN_COMMIT}#'")
+                }
+                if (CELL_COMMIT) {
+                  sh("find manifests -type f -name '*.yaml' | xargs sed -i 's#image: smartbox/cell#image: registry.smartbox.io/smartbox/cell:${CELL_COMMIT}#'")
+                }
+              }
             }
           }
         }
