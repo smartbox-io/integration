@@ -14,11 +14,13 @@ pipeline {
     stage("Retrieve build environment") {
       steps {
         script {
-          if (!COMMIT_MESSAGE) {
+          if (!params.COMMIT_MESSAGE) {
             COMMIT_MESSAGE = sh(returnStdout: true, script: "git rev-list --format=%B --max-count=1 ${GIT_COMMIT}").trim()
+          } else {
+            COMMIT_MESSAGE = params.COMMIT_MESSAGE
           }
           if (COMMIT_MESSAGE =~ /Requires:.*\/brain\/pull\/\d+/) {
-            if (BRAIN_COMMIT) {
+            if (params.BRAIN_COMMIT) {
               echo "[FAILURE] Sorry, you cannot Require a brain PR when forcing a specific commit"
               sh("exit 1")
             }
@@ -27,7 +29,7 @@ pipeline {
             BRAIN_PR = null
           }
           if (COMMIT_MESSAGE =~ /Requires:.*\/cell\/pull\/\d+/) {
-            if (CELL_COMMIT) {
+            if (params.CELL_COMMIT) {
               echo "[FAILURE] Sorry, you cannot Require a cell PR when forcing a specific commit"
               sh("exit 1")
             }
@@ -36,7 +38,7 @@ pipeline {
             CELL_PR = null
           }
           if (COMMIT_MESSAGE =~ /Requires:.*\/hack\/pull\/\d+/) {
-            if (HACK_COMMIT) {
+            if (params.HACK_COMMIT) {
               echo "[FAILURE] Sorry, you cannot Require a hack PR when forcing a specific commit"
               sh("exit 1")
             }
@@ -45,7 +47,7 @@ pipeline {
             HACK_PR = null
           }
           if (COMMIT_MESSAGE =~ /Requires:.*\/cluster\/pull\/\d+/) {
-            if (CLUSTER_COMMIT) {
+            if (params.CLUSTER_COMMIT) {
               echo "[FAILURE] Sorry, you cannot Require a cluster PR when forcing a specific commit"
               sh("exit 1")
             }
@@ -58,6 +60,8 @@ pipeline {
           } else {
             INTEGRATION_PR = null
           }
+          BRAIN_COMMIT = params.BRAIN_COMMIT
+          CELL_COMMIT = params.CELL_COMMIT
         }
       }
     }
@@ -118,15 +122,15 @@ pipeline {
           }
         }
         stage("hack") {
-          when { expression { HACK_PR || HACK_COMMIT } }
+          when { expression { HACK_PR || params.HACK_COMMIT } }
           steps {
             script {
               dir("hack") {
                 if (HACK_PR) {
                   sh("git fetch -f origin pull/${HACK_PR}/head:pull-request")
                   sh("git checkout pull-request")
-                } else if (HACK_COMMIT) {
-                  sh("git checkout -fB integration ${HACK_COMMIT}")
+                } else if (params.HACK_COMMIT) {
+                  sh("git checkout -fB integration ${params.HACK_COMMIT}")
                 }
               }
             }
@@ -142,15 +146,15 @@ pipeline {
           }
         }
         stage("cluster") {
-          when { expression { CLUSTER_PR || CLUSTER_COMMIT } }
+          when { expression { CLUSTER_PR || params.CLUSTER_COMMIT } }
           steps {
             script {
               dir("cluster") {
                 if (CLUSTER_PR) {
                   sh("git fetch -f origin pull/${CLUSTER_PR}/head:pull-request")
                   sh("git checkout pull-request")
-                } else if (CLUSTER_COMMIT) {
-                  sh("git checkout -fB integration ${CLUSTER_COMMIT}")
+                } else if (params.CLUSTER_COMMIT) {
+                  sh("git checkout -fB integration ${params.CLUSTER_COMMIT}")
                 }
               }
             }
@@ -161,7 +165,7 @@ pipeline {
     stage("Build cluster") {
       steps {
         dir("hack") {
-          sh("./hack --cells ${CELL_NUMBER}")
+          sh("./hack --cells ${params.CELL_NUMBER}")
           sh("./hack --wait")
           sh("./hack --label-nodes")
         }
