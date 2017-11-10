@@ -166,7 +166,7 @@ pipeline {
       steps {
         dir("hack") {
           sh("./hack --cells ${params.CELL_NUMBER}")
-          sh("./hack --wait")
+          sh("./hack --wait-for-cluster")
           sh("./hack --label-nodes")
         }
       }
@@ -220,6 +220,13 @@ pipeline {
       steps {
         dir("hack") {
           sh("./hack --apply")
+        }
+      }
+    }
+    stage("Wait for cells") {
+      steps {
+        dir("hack") {
+          sh("./hack --wait-for-cells")
         }
       }
     }
