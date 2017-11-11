@@ -65,7 +65,7 @@ pipeline {
         }
       }
     }
-    stage("Checkout dependencies") {
+    stage("Clone dependencies") {
      parallel {
         stage("brain") {
           steps {
@@ -97,7 +97,7 @@ pipeline {
         }
       }
     }
-    stage("Checkout requirements") {
+    stage("Checkout specific revisions") {
       parallel {
         stage("brain") {
           when { expression { BRAIN_PR } }
