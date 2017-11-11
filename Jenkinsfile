@@ -162,7 +162,7 @@ pipeline {
         }
       }
     }
-    stage("Build cluster") {
+    stage("Build kubernetes cluster") {
       steps {
         dir("hack") {
           sh("./hack --cells ${params.CELL_NUMBER}")
@@ -216,7 +216,7 @@ pipeline {
         }
       }
     }
-    stage("Deploy") {
+    stage("Deploy smartbox.io") {
       steps {
         dir("hack") {
           sh("./hack --apply")
