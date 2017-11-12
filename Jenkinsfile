@@ -165,7 +165,7 @@ pipeline {
     stage("Build kubernetes cluster") {
       steps {
         dir("hack") {
-          sh("./hack --cells ${params.CELL_NUMBER}")
+          sh("./hack --create --cells ${params.CELL_NUMBER}")
           sh("./hack --wait-for-cluster")
           sh("./hack --label-nodes")
         }
