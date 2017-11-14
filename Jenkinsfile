@@ -201,7 +201,7 @@ pipeline {
       }
     }
     stage("Prepare environment") {
-      when { expression { BRAIN_COMMIT || CELL_COMMIT } }
+      when { expression { BRAIN_COMMIT || CELL_COMMIT || UPLOADER_COMMIT } }
       parallel {
         stage("Ensure images exist") {
           steps {
