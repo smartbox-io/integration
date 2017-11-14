@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-admin
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      name: create-admin
+    spec:
+      nodeSelector:
+        type: tooling
+      containers:
+        - name: create-admin
+          image: smartbox/brain
+          command: ["brain", "admin", "create", "test", "test@example.com", "test"]
+          env:
+            - name: RAILS_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: brain-config
+                  key: rails.env
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: brain-secrets
+                  key: mysql_root_password
+      restartPolicy: Never

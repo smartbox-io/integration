@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: uploader
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      name: uploader
+    spec:
+      nodeSelector:
+        type: tooling
+      initContainers:
+        - name: uploader-init
+          image: smartbox/uploader
+          command: ["dd", "if=/dev/urandom", "of=/tmp/some-file", "bs=5MB", "count=1"]
+      containers:
+        - name: uploader
+          image: smartbox/uploader
+          command: ["bundle", "exec", "ruby", "uploader.rb", "/tmp/some-file"]
+      restartPolicy: Never
