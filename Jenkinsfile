@@ -8,6 +8,7 @@ pipeline {
     string(name: "CLUSTER_COMMIT", defaultValue: "", description: "Cluster project commit to checkout")
     string(name: "BRAIN_COMMIT", defaultValue: "", description: "Brain project commit to checkout")
     string(name: "CELL_COMMIT", defaultValue: "", description: "Cell project commit to checkout")
+    string(name: "UPLOADER_COMMIT", defaultValue: "", description: "Uploader project commit to checkout")
     string(name: "CELL_NUMBER", defaultValue: "1", description: "Number of cells to deploy")
   }
   stages {
@@ -55,6 +56,15 @@ pipeline {
           } else {
             CLUSTER_PR = null
           }
+          if (COMMIT_MESSAGE =~ /Requires:.*\/uploader\/pull\/\d+/) {
+            if (params.UPLOADER_COMMIT) {
+              echo "[FAILURE] Sorry, you cannot Require an uploader PR when forcing a specific commit"
+              sh("exit 1")
+            }
+            UPLOADER_PR = (COMMIT_MESSAGE =~ /Requires:.*\/uploader\/pull\/(\d+)/)[0][1]
+          } else {
+            UPLOADER_PR = null
+          }
           if (COMMIT_MESSAGE =~ /Requires:.*\/integration\/pull\/\d+/) {
             INTEGRATION_PR = (COMMIT_MESSAGE =~ /Requires:.*\/integration\/pull\/(\d+)/)[0][1]
           } else {
@@ -62,6 +72,7 @@ pipeline {
           }
           BRAIN_COMMIT = params.BRAIN_COMMIT
           CELL_COMMIT = params.CELL_COMMIT
+          UPLOADER_COMMIT = params.UPLOADER_COMMIT
         }
       }
     }
@@ -92,6 +103,13 @@ pipeline {
           steps {
             dir("cluster") {
               git url: "https://github.com/smartbox-io/cluster.git"
+            }
+          }
+        }
+        stage("uploader") {
+          steps {
+            dir("uploader") {
+              git url: "https://github.com/smartbox-io/uploader.git"
             }
           }
         }
@@ -160,6 +178,17 @@ pipeline {
             }
           }
         }
+        stage("uploader") {
+          when { expression { UPLOADER_PR } }
+          steps {
+            dir("uploader") {
+              sh("git fetch -f origin pull/${UPLOADER_PR}/head:pull-request-${UPLOADER_PR}")
+              script {
+                UPLOADER_COMMIT = sh("git rev-parse pull-request-${UPLOADER_PR}")
+              }
+            }
+          }
+        }
       }
     }
     stage("Build kubernetes cluster") {
@@ -193,6 +222,17 @@ pipeline {
                 if (!CELL_IMAGE_EXISTS) {
                   build job: "cell/master", parameters: [
                     string(name: "CELL_COMMIT", value: CELL_COMMIT),
+                    booleanParam(name: "SKIP_INTEGRATION", value: true)
+                  ]
+                }
+              }
+            }
+            script {
+              if (UPLOADER_COMMIT) {
+                UPLOADER_IMAGE_EXISTS = sh(returnStdout: true, script: "curl --write-out %{http_code} --silent --output /dev/null -I https://registry.smartbox.io/v2/smartbox/uploader/manifests/${UPLOADER_COMMIT}").trim() == "200"
+                if (!UPLOADER_IMAGE_EXISTS) {
+                  build job: "uploader/master", parameters: [
+                    string(name: "UPLOADER_COMMIT", value: UPLOADER_COMMIT),
                     booleanParam(name: "SKIP_INTEGRATION", value: true)
                   ]
                 }
